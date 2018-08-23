@@ -2,16 +2,14 @@ $LOAD_PATH << './modules'
 
 require 'TwoDoo'
 
-list = TwoDoo::List.new
 
 begin				
-	
+
+	list = TwoDoo::List.new	
 	puts list
 
-
-rescue Exception => e
+rescue StandardError => e
 	
 	puts "______________Error______________\n#{e.message}\n#{e.backtrace.inspect}"
-	# retry
 
 end

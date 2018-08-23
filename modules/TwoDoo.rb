@@ -9,9 +9,12 @@ module TwoDoo
 
   	attr_accessor :title, :description, :start_date, :end_date, :label, :finished_date    
 
+    # TODO: fix id
     def initialize(title, description, start_date, end_date, label)
 
-      if(validate_mandatory_input(title, end_date))
+      throw :invalid_data unless validate_input(title, start_date, end_date)
+
+      catch :invalid_data do
 
         @id = title.crypt(end_date.to_s)
         @title = title
@@ -19,11 +22,7 @@ module TwoDoo
         @start_date = DateTime.parse(start_date)
         @end_date = DateTime.parse(end_date)
         @label = label
-        @@number_of_tasks += 1        
-
-      else
-
-        raise "Title & End date are mandatory"
+        @@number_of_tasks += 1
 
       end      
 
@@ -48,19 +47,30 @@ module TwoDoo
     end
 
     private
-
-    # TODO: Add better error handling
-    def validate_mandatory_input(title, end_date_str)
+    
+    def validate_input(title, start_date_str, end_date_str)
       
-      if(!title.to_s.empty? and !end_date_str.to_s.empty?)                
+      begin
 
-        end_date = DateTime.parse(end_date_str)
-        return true
+        if !title.to_s.empty? and !end_date_str.to_s.empty?                  
 
-      else
+          DateTime.parse(start_date_str)
+          DateTime.parse(end_date_str)
+          return true
 
-        puts 'No'
-        return false
+        else
+
+          raise 'Title & end date are mandatory'
+
+        end       
+        
+      rescue ArgumentError => e
+
+        puts "______________Error______________\n#{e.message}\nProvide valid date"
+
+      rescue StandardError => e
+                        
+        puts "______________Error______________\n#{e.message}"        
 
       end      
 
@@ -78,24 +88,7 @@ module TwoDoo
   		@list_of_tasks = Array.new
       read_data()
 
-  	end
-
-    # This must read from the data file
-    def read_data()
-      
-      test_data_file = File.open("/home/#{ENV['USER']}/.TwoDoo/test_data.json", "r")
-      test_data_json = test_data_file.read()
-      test_data_file.close()
-
-      test_data = JSON.parse(test_data_json)  
-
-      test_data["List"].each do |task|        
-        
-        @list_of_tasks.push(Task.new(task["title"], task["description"], task["start_date"], task["end_date"], task["label"]))
-
-      end      
-
-    end
+  	end    
 
     # TODO: This must write to the data file
   	def add_task(title, description, start_date, end_date, label)
@@ -106,12 +99,13 @@ module TwoDoo
 
     def remove_task(index)
       
-      # Also needs to be removed from the database
+      # Also needs to be removed from the data file
       @list_of_tasks.delete_at(index)
       Task.remove_task
 
     end
 
+    # TODO: This must write to the data file under Finished_List + the finished date
     def finished_task
       
       @list_of_tasks.delete_at(index)
@@ -134,6 +128,26 @@ module TwoDoo
       return rep
 
     end
+
+    private
+
+    # This must read from the data file
+    def read_data()
+      
+      test_data_file = File.open("/home/#{ENV['USER']}/.TwoDoo/test_data.json", "r")
+      test_data_json = test_data_file.read()
+      test_data_file.close()
+
+      test_data = JSON.parse(test_data_json)  
+
+      test_data["List"].each do |task|        
+        
+        @list_of_tasks.push(Task.new(task["title"], task["description"], task["start_date"], task["end_date"], task["label"]))
+
+      end      
+
+    end
+
 
   end
 
