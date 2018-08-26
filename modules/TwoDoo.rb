@@ -94,6 +94,8 @@ module TwoDoo
   	def add_task(title, description, start_date, end_date, label)
 
   		@list_of_tasks.push(Task.new(title, description, start_date, end_date, label))
+      task_hash = {:title => title, :description => description, :start_date => start_date, :end_date => end_date, :label => label}
+      store_data(task_hash)
   		
   	end
 
@@ -130,24 +132,43 @@ module TwoDoo
     end
 
     private
-
-    # This must read from the data file
+    
     def read_data()
-      
-      test_data_file = File.open("/home/#{ENV['USER']}/.TwoDoo/test_data.json", "r")
-      test_data_json = test_data_file.read()
-      test_data_file.close()
+            
+      if File.exist?("/home/#{ENV['USER']}/.TwoDoo/test_data2.json")
 
-      test_data = JSON.parse(test_data_json)  
+        test_data_json = File.read("/home/#{ENV['USER']}/.TwoDoo/test_data2.json")      
+        test_data = JSON.parse(test_data_json)  
 
-      test_data["List"].each do |task|        
-        
-        @list_of_tasks.push(Task.new(task["title"], task["description"], task["start_date"], task["end_date"], task["label"]))
+        test_data["List"].each do |task|        
+          
+          @list_of_tasks.push(Task.new(task["title"], task["description"], task["start_date"], task["end_date"], task["label"]))
+
+        end      
 
       end      
 
     end
+        
+    def store_data(task_hash)          
 
+      if File.exist?("/home/#{ENV['USER']}/.TwoDoo/test_data2.json")
+        
+        test_data_json = File.read("/home/#{ENV['USER']}/.TwoDoo/test_data2.json")
+        test_data = JSON.parse(test_data_json)
+        test_data["List"].push(task_hash)
+        task_json = JSON.generate(test_data)
+        data_file = File.write("/home/#{ENV['USER']}/.TwoDoo/test_data2.json", task_json)
+
+      else 
+        
+        list_hash = {"List" => [task_hash]}
+        task_json = JSON.generate(list_hash)
+        data_file = File.write("/home/#{ENV['USER']}/.TwoDoo/test_data2.json", task_json)
+
+      end      
+      
+    end
 
   end
 
