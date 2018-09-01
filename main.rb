@@ -7,7 +7,8 @@ begin
 
 	list = TwoDoo::List.new	
 	puts list
-	# list.add_task("ID generation", "Write a method to generate id & prevent duplication", "2018-09-26", "2018-08-28", "TwoDoo")
+	# list.add_task("Write remove task", "Write the remove task feature to remove tasks from the file", "2018-09-01", "2018-09-02", "TwoDoo")
+	# list.add_task("Prevent date conflict", "Prevent date conflicts like the end date being before start date", "2018-09-01", "2018-09-05", "TwoDoo")
 	# puts list
 
 rescue StandardError => e

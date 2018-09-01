@@ -1,5 +1,6 @@
 require 'date'
 require 'json'
+require 'digest/sha1'
 
 module TwoDoo
 
@@ -7,16 +8,15 @@ module TwoDoo
 
   	@@number_of_tasks = 0
 
-  	attr_accessor :title, :description, :start_date, :end_date, :label, :finished_date    
-
-    # TODO: fix id
+  	attr_accessor :id, :title, :description, :start_date, :end_date, :label, :finished_date    
+    
     def initialize(title, description, start_date, end_date, label)
 
       throw :invalid_data unless validate_input(title, start_date, end_date)
 
-      catch :invalid_data do
+      catch :invalid_data do              
 
-        @id = title.crypt(end_date.to_s)
+        @id = Task.generate_id(title, end_date)
         @title = title
         @description = description
         @start_date = DateTime.parse(start_date)
@@ -76,6 +76,13 @@ module TwoDoo
 
     end
 
+    def self.generate_id(title, end_date)
+        end_date_str = end_date.gsub(/\s+/, '')
+        title_str = title.gsub(/\s+/, '')
+        base = end_date_str.concat(title_str)
+        Digest::SHA1.hexdigest(base)
+    end    
+
   end
   private_constant :Task
 
@@ -89,13 +96,16 @@ module TwoDoo
       read_data()
 
   	end    
-
-    # TODO: This must write to the data file
+    
   	def add_task(title, description, start_date, end_date, label)
+            
+      unless check_for_duplicate(title, end_date)
+        
+        @list_of_tasks.push(Task.new(title, description, start_date, end_date, label))
+        task_hash = {:title => title, :description => description, :start_date => start_date, :end_date => end_date, :label => label}
+        store_data(task_hash)
 
-  		@list_of_tasks.push(Task.new(title, description, start_date, end_date, label))
-      task_hash = {:title => title, :description => description, :start_date => start_date, :end_date => end_date, :label => label}
-      store_data(task_hash)
+      end  		
   		
   	end
 
@@ -168,6 +178,20 @@ module TwoDoo
 
       end      
       
+    end
+
+    def check_for_duplicate(title, end_date)   
+        duplicate = false     
+        new_task_id = Task.generate_id(title, end_date)
+        @list_of_tasks.each do |task|
+
+          if task.id == new_task_id
+            duplicate = true            
+            break
+          end          
+
+        end
+        duplicate
     end
 
   end
