@@ -11,20 +11,14 @@ module TwoDoo
   	attr_accessor :id, :title, :description, :start_date, :end_date, :label, :finished_date    
     
     def initialize(title, description, start_date, end_date, label)
-
-      throw :invalid_data unless validate_input(title, start_date, end_date)
-
-      catch :invalid_data do              
-
-        @id = Task.generate_id(title, end_date)
-        @title = title
-        @description = description
-        @start_date = DateTime.parse(start_date)
-        @end_date = DateTime.parse(end_date)
-        @label = label
-        @@number_of_tasks += 1
-
-      end      
+     
+      @title = title
+      @description = description
+      @start_date = DateTime.parse(start_date)
+      @end_date = DateTime.parse(end_date)
+      @label = label
+      @id = Task.generate_id(@title, @end_date)
+      @@number_of_tasks += 1
 
     end        
 
@@ -46,9 +40,13 @@ module TwoDoo
 
     end
 
-    private
-    
-    def validate_input(title, start_date_str, end_date_str)
+    def to_hash
+
+      hash = {"id" => id, "title" => title, "description" => description, "start_date" => start_date, "end_date" => end_date, "label" => label}
+      
+    end
+
+    def self.validate_input(title, start_date_str, end_date_str)
       
       begin
 
@@ -77,13 +75,13 @@ module TwoDoo
     end
 
     def self.generate_id(title, end_date)
-        end_date_str = end_date.gsub(/\s+/, '')
-        title_str = title.gsub(/\s+/, '')
-        base = end_date_str.concat(title_str)
+        end_date_str = end_date.to_s.gsub(/\s+/, '')
+        title_str = title.gsub(/\s+/, '')        
+        base = end_date_str.concat(title_str)        
         Digest::SHA1.hexdigest(base)
-    end    
+    end        
 
-  end
+  end  
   private_constant :Task
 
 
@@ -97,23 +95,30 @@ module TwoDoo
 
   	end    
     
-  	def add_task(title, description, start_date, end_date, label)
-            
-      unless check_for_duplicate(title, end_date)
-        
-        @list_of_tasks.push(Task.new(title, description, start_date, end_date, label))
-        task_hash = {:title => title, :description => description, :start_date => start_date, :end_date => end_date, :label => label}
-        store_data(task_hash)
+  	def add_task(title, description, start_date, end_date, label)                
 
-      end  		
+      throw :invalid_data unless Task.validate_input(title, start_date, end_date)
+
+      catch :invalid_data do        
+
+        if check_for_duplicate(title, end_date)
+        
+          @list_of_tasks.push(Task.new(title, description, start_date, end_date, label))
+          store_data()
+
+        end     
+
+      end      
   		
   	end
 
     def remove_task(index)
       
       # Also needs to be removed from the data file
-      @list_of_tasks.delete_at(index)
-      Task.remove_task
+      if @list_of_tasks.index(index)
+        @list_of_tasks.delete_at(index)
+        Task.remove_task
+      end      
 
     end
 
@@ -134,8 +139,10 @@ module TwoDoo
     def to_s
 
       rep = "____List____ (#{Task.number_of_tasks} tasks)\n"
+      index = 1
       @list_of_tasks.each do |task|
-        rep.concat("#{task}\n")
+        rep.concat("Task: #{index}\n#{task}\n")
+        index += 1
       end
       return rep
 
@@ -160,38 +167,42 @@ module TwoDoo
 
     end
         
-    def store_data(task_hash)          
+    def store_data()
 
-      if File.exist?("/home/#{ENV['USER']}/.TwoDoo/test_data2.json")
-        
-        test_data_json = File.read("/home/#{ENV['USER']}/.TwoDoo/test_data2.json")
-        test_data = JSON.parse(test_data_json)
-        test_data["List"].push(task_hash)
-        task_json = JSON.generate(test_data)
-        data_file = File.write("/home/#{ENV['USER']}/.TwoDoo/test_data2.json", task_json)
-
-      else 
-        
-        list_hash = {"List" => [task_hash]}
-        task_json = JSON.generate(list_hash)
-        data_file = File.write("/home/#{ENV['USER']}/.TwoDoo/test_data2.json", task_json)
-
-      end      
+      file_path = "/home/#{ENV['USER']}/.TwoDoo/test_data2.json"
+      
+      list_hash = to_hash @list_of_tasks      
+      task_json = JSON.generate(list_hash)
+      File.write(file_path, task_json)
       
     end
 
-    def check_for_duplicate(title, end_date)   
-        duplicate = false     
-        new_task_id = Task.generate_id(title, end_date)
+    def check_for_duplicate(title, end_date)
+        duplicate = true
+        new_task_id = Task.generate_id(title, DateTime.parse(end_date))
         @list_of_tasks.each do |task|
 
           if task.id == new_task_id
-            duplicate = true            
+            duplicate = false
+            puts "This task already exists"
             break
-          end          
+          end
 
         end
         duplicate
+    end
+
+    def to_hash list
+
+      tasks_hash = Array.new
+      list.each do | element |                
+
+        tasks_hash.push element.to_hash
+
+      end
+      
+      {"List" => tasks_hash}
+
     end
 
   end
