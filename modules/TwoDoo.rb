@@ -7,10 +7,11 @@ module TwoDoo
   class Task
 
   	@@number_of_tasks = 0
+    @@number_of_finished_tasks = 0
 
   	attr_accessor :id, :title, :description, :start_date, :end_date, :label, :finished_date
 
-    def initialize(title, description, start_date, end_date, label)
+    def initialize(title, description, start_date, end_date, finished_date, label)
 
       @title = title
       @description = description
@@ -18,7 +19,8 @@ module TwoDoo
       @end_date = DateTime.parse(end_date)
       @label = label
       @id = Task.generate_id(@title, @end_date)
-      @@number_of_tasks += 1
+      @finished_date = finished_date.nil? ?  nil : DateTime.parse(finished_date)
+      @@number_of_tasks += 1 if @finished_date.nil?
 
     end
 
@@ -34,15 +36,30 @@ module TwoDoo
 
     end
 
+    def finished_task
+
+      @@number_of_finished_tasks += 1
+      @finished_date = DateTime.now()
+
+    end
+
     def to_s
 
-    	"ID: #{@id}\nTitle: #{@title}\nDescription: #{@description}\nStart date: #{@start_date.strftime("%d/%m/%Y %H:%M")}\nEnd date: #{@end_date.strftime("%d/%m/%Y %H:%M")}\nLabel: #{@label}\n"
+      if @finished_date.nil?
+        "ID: #{@id}\nTitle: #{@title}\nDescription: #{@description}\nStart date: #{@start_date.strftime("%d/%m/%Y %H:%M")}\nEnd date: #{@end_date.strftime("%d/%m/%Y %H:%M")}\nLabel: #{@label}\n"
+      else
+        "ID: #{@id}\nTitle: #{@title}\nDescription: #{@description}\nStart date: #{@start_date.strftime("%d/%m/%Y %H:%M")}\nEnd date: #{@end_date.strftime("%d/%m/%Y %H:%M")}\nFinished date: #{@finished_date.strftime("%d/%m/%Y %H:%M")}\nLabel: #{@label}\n"
+      end
 
     end
 
     def to_hash
 
-      hash = {"id" => id, "title" => title, "description" => description, "start_date" => start_date, "end_date" => end_date, "label" => label}
+      if @finished_date.nil?
+        hash = {"id" => @id, "title" => @title, "description" => @description, "start_date" => @start_date, "end_date" => @end_date, "label" => @label}
+      else
+        hash = {"id" => @id, "title" => @title, "description" => @description, "start_date" => @start_date, "end_date" => @end_date, "finished_date" => @finished_date, "label" => @label}
+      end
 
     end
 
@@ -91,6 +108,7 @@ module TwoDoo
   	def initialize
 
   		@list_of_tasks = Array.new
+      @list_of_finished_tasks = Array.new
       read_data()
 
   	end
@@ -103,8 +121,8 @@ module TwoDoo
 
         if check_for_duplicate(title, end_date)
 
-          @list_of_tasks.push(Task.new(title, description, start_date, end_date, label))
-          store_data()
+          @list_of_tasks.push(Task.new(title, description, start_date, end_date, nil, label))
+          store_data
 
         end
 
@@ -117,24 +135,31 @@ module TwoDoo
       begin
         @list_of_tasks.delete_at(index-1)
         Task.remove_task
-        store_data()
+        store_data
       rescue StandardError => e
         puts "______________Error______________\nThe task doesn't exist\n#{e.message}\n#{e.backtrace.inspect}"
       end
 
     end
 
-    # TODO: This must write to the data file under Finished_List + the finished date
-    def finished_task
+    def finished_task(index)
 
-      @list_of_tasks.delete_at(index)
-      Task.remove_task
+      begin
+        task = @list_of_tasks.at(index-1)
+        task.finished_task
+        @list_of_finished_tasks.push(task)
+        @list_of_tasks.delete_at(index-1)
+        Task.remove_task
+        store_data
+      rescue StandardError => e
+        puts "______________Error______________\nThe task doesn't exist\n#{e.message}\n#{e.backtrace.inspect}"
+      end
 
     end
 
+    #TODO: To be implemented after GUI
     def send_notification
 
-      # To be implemented
 
     end
 
@@ -161,7 +186,13 @@ module TwoDoo
 
         test_data["List"].each do |task|
 
-          @list_of_tasks.push(Task.new(task["title"], task["description"], task["start_date"], task["end_date"], task["label"]))
+          @list_of_tasks.push(Task.new(task["title"], task["description"], task["start_date"], task["end_date"], nil, task["label"]))
+
+        end
+
+        test_data["Finished_list"].each do |task|
+
+          @list_of_finished_tasks.push(Task.new(task["title"], task["description"], task["start_date"], task["end_date"], task["finished_date"], task["label"]))
 
         end
 
@@ -173,8 +204,8 @@ module TwoDoo
 
       file_path = "/home/#{ENV['USER']}/.TwoDoo/test_data2.json"
 
-      list_hash = to_hash @list_of_tasks
-      task_json = JSON.generate(list_hash)
+      all_data = generate_hash
+      task_json = JSON.generate(all_data)
       File.write(file_path, task_json)
 
     end
@@ -194,16 +225,28 @@ module TwoDoo
         duplicate
     end
 
-    def to_hash list
+    def generate_hash
 
-      tasks_hash = Array.new
-      list.each do | element |
+      all_data = Hash.new
+      task_array = Array.new
+      @list_of_tasks.each do | element |
 
-        tasks_hash.push element.to_hash
+        task_array.push element.to_hash
 
       end
+      all_data["List"] = task_array
 
-      {"List" => tasks_hash}
+
+      task_array = Array.new
+      @list_of_finished_tasks.each do | element |
+
+        task_array.push element.to_hash
+
+      end
+      all_data["Finished_list"] = task_array
+
+
+      all_data
 
     end
 
