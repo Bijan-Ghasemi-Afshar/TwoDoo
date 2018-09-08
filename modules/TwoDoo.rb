@@ -1,6 +1,7 @@
 require 'date'
 require 'json'
 require 'digest/sha1'
+require 'os'
 
 module TwoDoo
 
@@ -109,7 +110,7 @@ module TwoDoo
 
   		@list_of_tasks = Array.new
       @list_of_finished_tasks = Array.new
-      read_data()
+      read_data
 
   	end
 
@@ -179,7 +180,9 @@ module TwoDoo
 
     def read_data()
 
-      if File.exist?("/home/#{ENV['USER']}/.TwoDoo/test_data2.json")
+      file_path = get_data_path
+
+      if File.exist?(file_path)
 
         test_data_json = File.read("/home/#{ENV['USER']}/.TwoDoo/test_data2.json")
         test_data = JSON.parse(test_data_json)
@@ -200,13 +203,25 @@ module TwoDoo
 
     end
 
-    def store_data()
-
-      file_path = "/home/#{ENV['USER']}/.TwoDoo/test_data2.json"
+    def store_data()            
+      
+      file_path = get_data_path
 
       all_data = generate_hash
       task_json = JSON.generate(all_data)
       File.write(file_path, task_json)
+
+    end
+
+    def get_data_path
+
+      file_path = "/home/#{ENV['USER']}/.TwoDoo/test_data2.json" if OS.linux?
+
+      file_path = "C:\\Users\\#{ENV['USER']}\\AppData\\Local\\TwoDoo\\test_data2.json" if OS.windows?
+
+      file_path = "/Users/#{ENV['USER']}/Library/Application Support/.TwoDoo/test_data2.json" if OS.mac?
+      
+      return file_path
 
     end
 
