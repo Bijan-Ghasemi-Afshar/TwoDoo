@@ -48,9 +48,9 @@ module TwoDoo
     def to_s
 
       if @finished_date.nil?
-        "ID: #{@id}\nTitle: #{@title}\nDescription: #{@description}\nStart date: #{@start_date.strftime("%d/%m/%Y %H:%M")}\nEnd date: #{@end_date.strftime("%d/%m/%Y %H:%M")}\nLabel: #{@label}\n"
+        "Title: #{@title}\nDescription: #{@description}\nStart date: #{@start_date.strftime("%d/%m/%Y %H:%M")}\nEnd date: #{@end_date.strftime("%d/%m/%Y %H:%M")}\nLabel: #{@label}\n"
       else
-        "ID: #{@id}\nTitle: #{@title}\nDescription: #{@description}\nStart date: #{@start_date.strftime("%d/%m/%Y %H:%M")}\nEnd date: #{@end_date.strftime("%d/%m/%Y %H:%M")}\nFinished date: #{@finished_date.strftime("%d/%m/%Y %H:%M")}\nLabel: #{@label}\n"
+        "Title: #{@title}\nDescription: #{@description}\nStart date: #{@start_date.strftime("%d/%m/%Y %H:%M")}\nEnd date: #{@end_date.strftime("%d/%m/%Y %H:%M")}\nFinished date: #{@finished_date.strftime("%d/%m/%Y %H:%M")}\nLabel: #{@label}\n"
       end
 
     end

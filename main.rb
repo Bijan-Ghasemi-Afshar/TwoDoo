@@ -1,3 +1,7 @@
+Shoes.setup do    
+  gem 'os'  
+end
+
 $LOAD_PATH << './modules'
 
 require 'TwoDoo'
@@ -5,7 +9,7 @@ require 'TwoDoo'
 begin
 
 	list = TwoDoo::List.new
-	puts list
+	# puts list
 
 	# list.add_task("Review Code", "Review code consistansy and proper engineering", "2018-09-06", "2018-09-06", "TwoDoo")
 	# list.add_task("Remove finished tasks", "Be able to remove finshed tasks", "2018-09-06", "2018-09-07", "TwoDoo")
@@ -24,44 +28,49 @@ rescue StandardError => e
 
 end
 
-# Shoes.app title: "TwoDoo" do
-# 	background "#5d6066"
-# 	title("The List",
-#           top:    20,
-#           align:  "center",
-#           stroke: white)
+# list = TwoDoo::List.new
+Shoes.app title: "TwoDoo" do	
 
-# 	@list = stack margin: 10, align: "center" do
+	background "#5d6066"
+	title("The List",
+          top:    20,
+          align:  "center",
+          stroke: white)	
 
-# 		# list.each do |task|
-# 		# 	para task
-# 		# end
+	@list = stack top: 0.3, margin_left: 20, align: "center" do		
 
-# 	end
+		para list, stroke: white
 
-# 	@bring_form = button "Add Task", top: 0.8, left: 0.8
+	end
 
-# 	@bring_form.click do
-# 		window title: "Add Task" do
-# 			background "#5d6066"
-# 			title("Fill The Form",
-#           top:    20,
-#           align:  "center",          
-#           stroke: white)
-# 			@form = stack top: 60, margin: 15 do
-# 				para "Title", stroke: white, margin_top: 15
-# 				@title = edit_line width: 1.0
-# 				para "Description", stroke: white, margin_top: 15
-# 				@description = edit_box width: 1.0
-# 				para "Start Date", stroke: white, margin_top: 15
-# 				@start_date = edit_line width: 1.0
-# 				para "End Date", stroke: white, margin_top: 15
-# 				@end_date = edit_line width: 1.0
-# 				para "Label", stroke: white, margin_top: 15
-# 				@label = edit_line width: 1.0
-# 				@create_task = button "OK", margin_top: 15
-# 			end
-#     end
-# 	end   
+	@bring_form = button "Add Task", top: 0.8, left: 0.8
 
-#  end
+	@bring_form.click do
+		window title: "Add Task" do
+			background "#5d6066"
+			title("Fill The Form",
+          top:    20,
+          align:  "center",          
+          stroke: white)
+			@form = stack top: 60, margin: 15 do
+				para "Title", stroke: white, margin_top: 15
+				@title = edit_line width: 1.0
+				para "Description", stroke: white, margin_top: 15
+				@description = edit_box width: 1.0
+				para "Start Date", stroke: white, margin_top: 15
+				@start_date = edit_line width: 1.0
+				para "End Date", stroke: white, margin_top: 15
+				@end_date = edit_line width: 1.0
+				para "Label", stroke: white, margin_top: 15
+				@label = edit_line width: 1.0
+				@create_task = button "OK", margin_top: 15
+			end
+
+			@create_task.click do								
+				list.add_task(@title.text, @description.text, @start_date.text, @end_date.text, @label.text)
+			end
+
+    end
+	end   
+
+ end
