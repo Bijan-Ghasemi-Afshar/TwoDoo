@@ -107,6 +107,8 @@ module TwoDoo
 
   class List
 
+    attr_reader :list_of_tasks
+
   	def initialize
 
   		@list_of_tasks = Array.new
@@ -165,6 +167,12 @@ module TwoDoo
 
     end
 
+    def get_task(index)
+      
+      @list_of_tasks.at(index-1) if index > 0
+
+    end    
+
     def to_s
 
       rep = "____List____ (#{Task.number_of_tasks} tasks)\n"
@@ -209,21 +217,21 @@ module TwoDoo
       file_path = get_data_path
 
       all_data = generate_hash
-      task_json = JSON.generate(all_data)
+      task_json = JSON.generate(all_data)      
 
-      FileUtils.mkdir(get_data_directory_path) unless File.exist?(file_path)
+      FileUtils.mkdir(get_data_directory_path) if(!File.exist?(get_data_directory_path))
 
-      File.write(file_path, task_json)
+      File.open(file_path, "w") {|f| f.write(task_json) }
 
     end
 
     def get_data_path
 
-      file_path = "/home/#{ENV['USER']}/.TwoDoo/test_data2.json" if OS.linux?
+      file_path = "/home/#{ENV['USER']}/.TwoDoo/list_data.json" if OS.linux?
 
-      file_path = "C:\\Users\\#{ENV['USER']}\\AppData\\Local\\TwoDoo\\test_data2.json" if OS.windows?
+      file_path = "C:\\Users\\#{ENV['USER']}\\AppData\\Local\\TwoDoo\\list_data.json" if OS.windows?
 
-      file_path = "/Users/#{ENV['USER']}/Library/Application Support/.TwoDoo/test_data2.json" if OS.mac?
+      file_path = "/Users/#{ENV['USER']}/Library/Application Support/.TwoDoo/list_data.json" if OS.mac?
       
       return file_path
 

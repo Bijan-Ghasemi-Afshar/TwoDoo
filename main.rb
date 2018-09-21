@@ -8,19 +8,10 @@ require 'TwoDoo'
 
 begin
 
-	list = TwoDoo::List.new
-	# puts list
+	list = TwoDoo::List.new	
+	puts list
 
-	# list.add_task("Review Code", "Review code consistansy and proper engineering", "2018-09-06", "2018-09-06", "TwoDoo")
-	# list.add_task("Remove finished tasks", "Be able to remove finshed tasks", "2018-09-06", "2018-09-07", "TwoDoo")
-	# list.add_task("Prevent date conflict", "Prevent date conflicts like the end date being before start date", "2018-09-06", "2018-09-10", "TwoDoo")
-	# list.add_task("Console support", "Make the app to work with console commands BITCH", "2018-09-10", "2018-09-11", "TwoDoo")
-
-	# list.remove_task(1)
-
-	# list.finished_task(1)
-
-	# puts list
+	list.add_task("Task 01", "Task description", "12/09/2018", "14/09/2018", "TwoDoo")
 
 rescue StandardError => e
 
@@ -28,49 +19,82 @@ rescue StandardError => e
 
 end
 
-# list = TwoDoo::List.new
 Shoes.app title: "TwoDoo" do	
-
-	background "#5d6066"
+	
 	title("The List",
           top:    20,
-          align:  "center",
-          stroke: white)	
+          align:  "center")			
 
-	@list = stack top: 0.3, margin_left: 20, align: "center" do		
+		@list = stack top: 0.3, margin_left: 20, align: "center" do		
+		
+			index = 1
+			list.list_of_tasks.each do |task|
 
-		para list, stroke: white
+				flow do
+					para "Task #{index}: "
+					para (
+						link("#{task.title}").click do
+							alert(task)
+						end
+					)
+				end
 
-	end
+				index += 1
+			end
+
+		end			
 
 	@bring_form = button "Add Task", top: 0.8, left: 0.8
 
+
+	owner_list = @list
 	@bring_form.click do
 		window title: "Add Task" do
-			background "#5d6066"
+
 			title("Fill The Form",
-          top:    20,
-          align:  "center",          
-          stroke: white)
+			      top:    20,
+			      align:  "center")
+
 			@form = stack top: 60, margin: 15 do
-				para "Title", stroke: white, margin_top: 15
+				para "Title", margin_top: 15
 				@title = edit_line width: 1.0
-				para "Description", stroke: white, margin_top: 15
+				para "Description", margin_top: 15
 				@description = edit_box width: 1.0
-				para "Start Date", stroke: white, margin_top: 15
+				para "Start Date", margin_top: 15
 				@start_date = edit_line width: 1.0
-				para "End Date", stroke: white, margin_top: 15
+				para "End Date", margin_top: 15
 				@end_date = edit_line width: 1.0
-				para "Label", stroke: white, margin_top: 15
+				para "Label", margin_top: 15
 				@label = edit_line width: 1.0
 				@create_task = button "OK", margin_top: 15
 			end
 
 			@create_task.click do								
 				list.add_task(@title.text, @description.text, @start_date.text, @end_date.text, @label.text)
+
+				# para owner_list
+
+				# owner_list.clear
+				# index = 1
+				# list.list_of_tasks.each do |task|
+
+				# 	@elem = flow do
+				# 		para "Task #{index}: "
+				# 		para (
+				# 			link("#{task.title}").click do
+				# 				alert(task)
+				# 			end
+				# 		)
+				# 	end
+
+				# 	owner_list.append(@elem)
+
+				# 	index += 1
+				# end
+
 			end
 
     end
 	end   
 
- end
+end
