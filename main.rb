@@ -8,10 +8,7 @@ require 'TwoDoo'
 
 begin
 
-	list = TwoDoo::List.new	
-	puts list
-
-	list.add_task("Task 01", "Task description", "12/09/2018", "14/09/2018", "TwoDoo")
+	list = TwoDoo::List.new			
 
 rescue StandardError => e
 
@@ -25,18 +22,18 @@ Shoes.app title: "TwoDoo" do
           top:    20,
           align:  "center")			
 
-		@list = stack top: 0.3, margin_left: 20, align: "center" do		
+		@list = stack top: 0.3, margin_left: 20, align: "center" do			
 		
 			index = 1
 			list.list_of_tasks.each do |task|
 
 				flow do
-					para "Task #{index}: "
+					para "Task #{index}:"
 					para (
 						link("#{task.title}").click do
 							alert(task)
 						end
-					)
+					)					
 				end
 
 				index += 1
@@ -47,7 +44,8 @@ Shoes.app title: "TwoDoo" do
 	@bring_form = button "Add Task", top: 0.8, left: 0.8
 
 
-	owner_list = @list
+	list_column = @list
+	task_column = @task_column
 	@bring_form.click do
 		window title: "Add Task" do
 
@@ -72,25 +70,24 @@ Shoes.app title: "TwoDoo" do
 			@create_task.click do								
 				list.add_task(@title.text, @description.text, @start_date.text, @end_date.text, @label.text)
 
-				# para owner_list
+				list_column.clear {
+					index = 1
+					list.list_of_tasks.each do |task|
 
-				# owner_list.clear
-				# index = 1
-				# list.list_of_tasks.each do |task|
+						list_column.flow do
+							list_column.para "Task #{index}:"
+							list_column.para (
+								link("#{task.title}").click do
+									alert(task)
+								end
+							)					
+						end
 
-				# 	@elem = flow do
-				# 		para "Task #{index}: "
-				# 		para (
-				# 			link("#{task.title}").click do
-				# 				alert(task)
-				# 			end
-				# 		)
-				# 	end
-
-				# 	owner_list.append(@elem)
-
-				# 	index += 1
-				# end
+						index += 1
+					end
+				}
+				
+				close
 
 			end
 
